@@ -1,0 +1,63 @@
+**Tables:**
+
+- **Patients** — stores who the patient is. personal/contact info only, no medical data
+- **Specialties** — lookup table for doctor specializations e.g. Cardiology, Dermatology
+- **Doctors** — stores doctor info, each doctor belongs to one specialty
+- **Appointments** — a booking request by a patient for a specific doctor at a scheduled time
+- **Consultations** — the actual visit/session that happens, may or may not come from an appointment
+- **Tests** — master catalog of available diagnostic tests with their base cost
+- **Prescribed_Tests** — which tests a doctor ordered during a specific consultation
+- **Reports** — the result/findings generated after a prescribed test is completed
+- **Invoices** — the final bill generated for a consultation visit
+- **Invoice_Items** — line-by-line breakdown of what's being charged in that invoice
+
+---
+
+**Relations:**
+
+`Specialties → Doctors` — one to many. one specialty has many doctors, one doctor belongs to one specialty
+
+`Patients → Appointments` — one to many. one patient can book many appointments over time
+
+`Doctors → Appointments` — one to many. one doctor can have many appointments
+
+`Appointments → Consultations` — one to one (nullable). one appointment leads to at most one consultation. but a consultation can exist without an appointment (walk-in)
+
+`Patients → Consultations` — one to many. same patient can have many consultations across visits
+
+`Doctors → Consultations` — one to many. one doctor conducts many consultations
+
+`Consultations → Prescribed_Tests` — one to many. one consultation can prescribe multiple tests
+
+`Tests → Prescribed_Tests` — one to many. same test type can be prescribed across many consultations
+
+`Prescribed_Tests → Reports` — one to one. each prescribed test produces one report when done
+
+`Consultations → Invoices` — one to one. one consultation generates one invoice
+
+`Invoices → Invoice_Items` — one to many. one invoice has multiple line items (consultation fee + each test)
+
+`Prescribed_Tests → Invoice_Items` — one to one (nullable). a test line item points back to which prescribed test it's charging for
+
+`Consultations → Invoice_Items` — one to one (nullable). the consultation fee line item points back to the consultation
+
+---
+
+**The Clinic — A Day in the System**
+
+Priya Sharma calls the clinic and books an appointment with Dr. Arjun Mehta (Cardiologist). That creates a row in **Appointments** — status: `booked`.
+
+Dr. Mehta sees her. The appointment flips to `completed` and a **Consultation** record is created linked to that appointment. Mehta notes her `chief_complaint` as chest pain, writes his `diagnosis`, and prescribes two tests — ECG and Blood Panel. Two rows go into **Prescribed_Tests**, both `pending`.
+
+The lab runs both tests. Two **Reports** are generated, each linked back to their prescribed test with the results.
+
+At checkout, the front desk generates an **Invoice** for Priya's visit. It has three **Invoice_Items** — one for the consultation fee (₹800), one for ECG (₹400), one for Blood Panel (₹600). Total: ₹1800. Priya pays by card, invoice flips to `paid`.
+
+Next month Priya walks in without booking — straight to Dr. Mehta. No appointment this time, so a **Consultation** is created with `appointment_id = null`. Same flow continues from there.\
+\
+**Why this DB design works:**
+
+- Appointment and Consultation are separate so a no-show doesn't create a fake visit record
+- Tests are a master catalog so the clinic can add/disable tests without touching old records
+- Invoice + Invoice_Items means one clean bill per visit with full breakdown
+- Everything traces back to the patient without duplicating their data anywhere
