@@ -189,4 +189,3 @@ The **`payment`** table stores:
 
 From Rahul’s bike to Arjun’s VIP SUV, the system ensures every vehicle is handled efficiently from entry to exit while maintaining order, fairness, and smooth operations throughout the event.
 
-This design reflects a practical, scalable, and real-world-ready parking management solution.
