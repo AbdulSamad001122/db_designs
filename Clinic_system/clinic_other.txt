@@ -54,7 +54,7 @@ The lab runs both tests. Two **Reports** are generated, each linked back to thei
 At checkout, the front desk generates an **Invoice** for Priya's visit. It has three **Invoice_Items** — one for the consultation fee (₹800), one for ECG (₹400), one for Blood Panel (₹600). Total: ₹1800. Priya pays by card, invoice flips to `paid`.
 
 Next month Priya walks in without booking — straight to Dr. Mehta. No appointment this time, so a **Consultation** is created with `appointment_id = null`. Same flow continues from there.\
-\
+
 **Why this DB design works:**
 
 - Appointment and Consultation are separate so a no-show doesn't create a fake visit record
